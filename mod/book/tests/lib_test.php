@@ -202,7 +202,7 @@ class mod_book_lib_testcase extends advanced_testcase {
         // Setup test data.
         $course = $this->getDataGenerator()->create_course(array('enablecompletion' => 1));
         $book = $this->getDataGenerator()->create_module('book', array('course' => $course->id),
-                                                            array('completion' => 2, 'completionview' => 1));
+                                                            array('completion' => 2, 'completionview' => 1, 'readpercent' => 100));
         $bookgenerator = $this->getDataGenerator()->get_plugin_generator('mod_book');
         $chapter = $bookgenerator->create_chapter(array('bookid' => $book->id));
 
@@ -213,7 +213,7 @@ class mod_book_lib_testcase extends advanced_testcase {
         $sink = $this->redirectEvents();
 
         // Check just opening the book.
-        book_view($book, 0, false, $course, $cm, $context);
+        book_view($book, $context);
 
         $events = $sink->get_events();
         $this->assertCount(1, $events);
@@ -228,7 +228,7 @@ class mod_book_lib_testcase extends advanced_testcase {
         $this->assertNotEmpty($event->get_name());
 
         // Check viewing one book chapter (the only one so it will be the first and last).
-        book_view($book, $chapter, true, $course, $cm, $context);
+        book_view($book, $context, $chapter);
 
         $events = $sink->get_events();
         // We expect a total of 4 events. One for module viewed, one for chapter viewed and two belonging to completion.

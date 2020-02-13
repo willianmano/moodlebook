@@ -1,0 +1,23 @@
+<table class="flexible generaltable generalbox" aria-live="polite">
+    <thead>
+    <tr>
+        <th class="header c0" width="30%" scope="col">{{#str}}name{{/str}}</th>
+        <th class="header c1" width="55%" scope="col">{{#str}}readprogress, mod_book{{/str}}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{#students}}
+        <tr>
+            <td class="cell c0">{{{userpicture}}} {{{fullname}}}</td>
+            <td class="cell c1 column-progress">
+                <div class='progress'>
+                    <div class='progress-bar progress-bar-striped progress-bar-info' role='progressbar' aria-valuenow='{{{progress}}}'
+                         aria-valuemin='0' aria-valuemax='100' style='width: {{{ progress }}}%;'>
+                    </div>
+                </div>
+                <div class="percent">{{{ progress }}}%</div>
+            </td>
+        </tr>
+    {{/students}}
+    </tbody>
+</table>

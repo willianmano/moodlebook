@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Leaderboard block for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,15 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Book IMSCP export plugin version info
+ * Book Module events observers
  *
- * @package    booktool_exportimscp
- * @copyright  2011 Petr Skoda {@link http://skodak.org}
+ * @package    mod_book
+ * @copyright  2019 Willian Mano {@link http://conecti.me}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'booktool_exportimscp'; // Full name of the plugin (used for diagnostics)
-$plugin->version   = 2019052000; // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2019051100; // Requires this Moodle version.
+$observers = array(
+    array(
+        'eventname' => '\mod_book\event\course_module_viewed',
+        'callback' => '\mod_book\observer::module_viewed',
+        'internal' => false
+    ),
+    array(
+        'eventname' => '\mod_book\event\chapter_viewed',
+        'callback' => '\mod_book\observer::chapter_viewed',
+        'internal' => false
+    )
+);

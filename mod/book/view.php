@@ -74,19 +74,40 @@ $chapters = book_preload_chapters($book);
 if ($allowedit and !$chapters) {
     redirect('edit.php?cmid='.$cm->id); // No chapters - add new one.
 }
+
 // Check chapterid and read chapter data
 if ($chapterid == '0') { // Go to first chapter if no given.
+
     // Trigger course module viewed event.
-    book_view($book, null, false, $course, $cm, $context);
+    book_view($book, $context);
 
     foreach ($chapters as $ch) {
-        if ($edit || ($ch->hidden && $viewhidden)) {
+        if ($edit) {
             $chapterid = $ch->id;
             break;
         }
+
         if (!$ch->hidden) {
             $chapterid = $ch->id;
             break;
+        }
+    }
+
+<<<<<<< HEAD
+    if ($book->backtolastpage && !$edit) {
+        $lastuserviewedchapter = \mod_book\data\userviews::get_last_book_userview($book, $USER->id);
+
+        if ($lastuserviewedchapter != false) {
+=======
+    // If a page was not set, set the last visited page to display if it exists and not hidden.
+    $lastuserviewedchapter = mod_book_get_last_user_viewed_chapter($book, $cm);
+
+    if (!$edit && $lastuserviewedchapter != false) {
+        $lastchapter = isset($chapters[$lastuserviewedchapter]) ? $chapters[$lastuserviewedchapter] : false;
+
+        if (!$lastchapter->hidden) {
+>>>>>>> c988b19c5730921b788c596aab4ff7c4ec1e981e
+            $chapterid = $lastuserviewedchapter;
         }
     }
 }
@@ -132,7 +153,7 @@ $nexttitle = null;
 $navnexttitle = null;
 $last = null;
 foreach ($chapters as $ch) {
-    if (!$edit and ($ch->hidden && !$viewhidden)) {
+    if (!$edit and $ch->hidden) {
         continue;
     }
     if ($last == $chapter->id) {
@@ -198,13 +219,7 @@ if ($book->navstyle) {
     }
 }
 
-// We need to discover if this is the last chapter to mark activity as completed.
-$islastchapter = false;
-if (!$nextid) {
-    $islastchapter = true;
-}
-
-book_view($book, $chapter, $islastchapter, $course, $cm, $context);
+book_view($book, $context, $chapter);
 
 // =====================================================
 // Book display HTML code

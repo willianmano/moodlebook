@@ -93,8 +93,74 @@ class mod_book_mod_form extends moodleform_mod {
         $mform->addHelpButton('customtitles', 'customtitles', 'mod_book');
         $mform->setDefault('customtitles', 0);
 
+        $mform->addElement('checkbox', 'backtolastpage', get_string('backtolastpage', 'book'));
+        $mform->addHelpButton('backtolastpage', 'backtolastpage', 'mod_book');
+        $mform->setDefault('backtolastpage', 1);
+
         $this->standard_coursemodule_elements();
 
         $this->add_action_buttons();
+    }
+
+    /**
+     * Process the data before load the form
+     *
+     * @param array $defaultvalues
+     */
+    public function data_preprocessing(&$defaultvalues) {
+        parent::data_preprocessing($default_values);
+
+        $defaultvalues['completionview'] = $defaultvalues['readpercent'] != "0" ? 1 : 0;
+        $defaultvalues['readpercentactive'] = $defaultvalues['readpercent'] != "0" ? 1 : 0;
+    }
+
+    /**
+     * Process data after form submit
+     * @param stdClass $data
+     * @return stdClass|void
+     */
+    public function data_postprocessing($data) {
+        parent::data_postprocessing($data);
+
+        $data->completionview = empty($data->readpercent) ? "0" : "1";
+        $data->readpercentactive = empty($data->readpercent) ? "0" : "1";
+    }
+
+    /**
+     * Book completion rule fields.
+     *
+     * @return array|void
+     *
+     * @throws coding_exception
+     */
+    public function add_completion_rules() {
+        $mform = $this->_form;
+
+        $completionviews = [];
+        for ($i = 10; $i <= 100; $i+=10) {
+            $completionviews[$i] = $i . '%';
+        }
+
+        $group = [
+            $mform->createElement('checkbox', 'readpercentactive', '   ', get_string('requiredreadpercent', 'book')),
+            $mform->createElement('select', 'readpercent', get_string('readpercentselect', 'book'), $completionviews),
+        ];
+
+        $mform->addGroup($group, 'completionviewgroup', get_string('readpercentselect', 'book'), ['<br>'], false);
+        $mform->disabledIf('completionview', 'readpercentactive', 'notchecked');
+        $mform->disabledIf('readpercent', 'readpercentactive', 'notchecked');
+
+        return ['completionviewgroup'];
+    }
+
+    /**
+     * Called during validation to see whether some module-specific completion rules are selected.
+     *
+     * @param array $data Input data not yet validated.
+     *
+     * @return bool True if one or more rules is enabled, false if none are.
+     */
+    public function completion_rule_enabled($data) {
+        return (!empty($data['readpercentactive']) && $data['readpercent'] > 0);
     }
 }

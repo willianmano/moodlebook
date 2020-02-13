@@ -307,6 +307,7 @@ function book_supports($feature) {
         case FEATURE_GROUPINGS:               return false;
         case FEATURE_MOD_INTRO:               return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
+        case FEATURE_COMPLETION_HAS_RULES:    return true;
         case FEATURE_GRADE_HAS_GRADE:         return false;
         case FEATURE_GRADE_OUTCOMES:          return false;
         case FEATURE_BACKUP_MOODLE2:          return true;
@@ -324,7 +325,7 @@ function book_supports($feature) {
  * @return void
  */
 function book_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $booknode) {
-    global $USER, $PAGE, $OUTPUT;
+    global $DB, $USER, $PAGE, $OUTPUT;
 
     if ($booknode->children->count() > 0) {
         $firstkey = $booknode->children->get_key_list()[0];
@@ -347,6 +348,32 @@ function book_extend_settings_navigation(settings_navigation $settingsnav, navig
         $editnode = navigation_node::create($string, $url, navigation_node::TYPE_SETTING);
         $booknode->add_node($editnode, $firstkey);
         $PAGE->set_button($OUTPUT->single_button($url, $string));
+    }
+
+    if ($PAGE->cm->modname === 'book' and !empty($params['id']) and has_capability('mod/book:viewreports', $PAGE->cm->context)) {
+        $book = $DB->get_record('book', array('id' => $PAGE->cm->instance), '*', MUST_EXIST);
+
+        if ($book->readpercent != 0) {
+            $reportstr = get_string('bookviewreport', 'mod_book');
+            $url = new moodle_url('/mod/book/report.php', array('id' => $params['id']));
+            $editnode = navigation_node::create($reportstr,
+                $url,
+                navigation_node::TYPE_SETTING,
+                $reportstr,
+                'mod-book-view-report',
+                new pix_icon('i/stats', $reportstr));
+            $booknode->add_node($editnode, $firstkey);
+
+            $reportstr = get_string('bookreadreport', 'mod_book');
+            $url = new moodle_url('/mod/book/reportread.php', array('id' => $params['id']));
+            $editnode = navigation_node::create($reportstr,
+                $url,
+                navigation_node::TYPE_SETTING,
+                $reportstr,
+                'mod-book-view-reportread',
+                new pix_icon('i/outcomes', $reportstr));
+            $booknode->add_node($editnode, $firstkey);
+        }
     }
 
     $plugins = core_component::get_plugin_list('booktool');
@@ -659,28 +686,18 @@ function book_export_contents($cm, $baseurl) {
 /**
  * Mark the activity completed (if required) and trigger the course_module_viewed event.
  *
- * @param  stdClass $book       book object
- * @param  stdClass $chapter    chapter object
- * @param  bool $islaschapter   is the las chapter of the book?
- * @param  stdClass $course     course object
- * @param  stdClass $cm         course module object
- * @param  stdClass $context    context object
+ * @param stdClass $book book object
+ * @param stdClass $chapter chapter object
+ * @param stdClass $context context object
+ * @throws coding_exception
  * @since Moodle 3.0
  */
-function book_view($book, $chapter, $islastchapter, $course, $cm, $context) {
-
+function book_view($book, $context, $chapter = null) {
     // First case, we are just opening the book.
     if (empty($chapter)) {
         \mod_book\event\course_module_viewed::create_from_book($book, $context)->trigger();
-
     } else {
         \mod_book\event\chapter_viewed::create_from_chapter($book, $context, $chapter)->trigger();
-
-        if ($islastchapter) {
-            // We cheat a bit here in assuming that viewing the last page means the user viewed the whole book.
-            $completion = new completion_info($course);
-            $completion->set_module_viewed($cm);
-        }
     }
 }
 
@@ -782,3 +799,44 @@ function mod_book_core_calendar_provide_event_action(calendar_event $event,
         true
     );
 }
+<<<<<<< HEAD
+
+/**
+ * Obtains the automatic completion state for this book based on any conditions in book settings.
+ *
+ * @param $course
+ * @param $cm
+ * @param $userid
+ * @param $type
+ *
+ * @return bool
+ *
+ * @throws Exception
+ */
+function book_get_completion_state($course, $cm, $userid, $type) {
+    global $CFG, $DB;
+
+    try {
+        $book = $DB->get_record('book', array('id' => $cm->instance), '*', MUST_EXIST);
+
+        if (!$book->readpercent) {
+            return $type;
+        }
+
+        $percentviewed = \mod_book\data\userviews::get_book_userview_progress($book->id, $userid);
+
+        if ($percentviewed >= $book->readpercent) {
+            return true;
+        }
+
+        return false;
+    } catch (\Exception $e) {
+        if($CFG->debug == DEBUG_DEVELOPER){
+            throw $e;
+        }
+
+        return $type;
+    }
+}
+=======
+>>>>>>> c988b19c5730921b788c596aab4ff7c4ec1e981e

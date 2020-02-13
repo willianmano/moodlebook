@@ -219,16 +219,16 @@ function book_get_toc($chapters, $chapter, $book, $cm, $edit) {
 
     switch ($book->numbering) {
         case BOOK_NUM_NONE:
-            $toc .= html_writer::start_tag('div', array('class' => 'book_toc book_toc_none clearfix'));
+            $toc .= html_writer::start_tag('div', array('class' => 'book_toc_none clearfix'));
             break;
         case BOOK_NUM_NUMBERS:
-            $toc .= html_writer::start_tag('div', array('class' => 'book_toc book_toc_numbered clearfix'));
+            $toc .= html_writer::start_tag('div', array('class' => 'book_toc_numbered clearfix'));
             break;
         case BOOK_NUM_BULLETS:
-            $toc .= html_writer::start_tag('div', array('class' => 'book_toc book_toc_bullets clearfix'));
+            $toc .= html_writer::start_tag('div', array('class' => 'book_toc_bullets clearfix'));
             break;
         case BOOK_NUM_INDENTED:
-            $toc .= html_writer::start_tag('div', array('class' => 'book_toc book_toc_indented clearfix'));
+            $toc .= html_writer::start_tag('div', array('class' => 'book_toc_indented clearfix'));
             break;
     }
 
@@ -244,11 +244,11 @@ function book_get_toc($chapters, $chapter, $book, $cm, $edit) {
             if (!$ch->subchapter) {
 
                 if ($first) {
-                    $toc .= html_writer::start_tag('li');
+                    $toc .= html_writer::start_tag('li', array('class' => 'clearfix'));
                 } else {
                     $toc .= html_writer::end_tag('ul');
                     $toc .= html_writer::end_tag('li');
-                    $toc .= html_writer::start_tag('li');
+                    $toc .= html_writer::start_tag('li', array('class' => 'clearfix'));
                 }
 
                 if (!$ch->hidden) {
@@ -267,11 +267,11 @@ function book_get_toc($chapters, $chapter, $book, $cm, $edit) {
             } else {
 
                 if ($first) {
-                    $toc .= html_writer::start_tag('li');
+                    $toc .= html_writer::start_tag('li', array('class' => 'clearfix'));
                     $toc .= html_writer::start_tag('ul');
-                    $toc .= html_writer::start_tag('li');
+                    $toc .= html_writer::start_tag('li', array('class' => 'clearfix'));
                 } else {
-                    $toc .= html_writer::start_tag('li');
+                    $toc .= html_writer::start_tag('li', array('class' => 'clearfix'));
                 }
 
                 if (!$ch->hidden) {
@@ -291,15 +291,15 @@ function book_get_toc($chapters, $chapter, $book, $cm, $edit) {
                     $titleout = html_writer::tag('span', $title, array('class' => 'dimmed_text'));
                 }
             }
-            $toc .= html_writer::start_tag('div', array('class' => 'd-flex'));
+
             if ($ch->id == $chapter->id) {
-                $toc .= html_writer::tag('strong', $titleout, array('class' => 'text-truncate'));
+                $toc .= html_writer::tag('strong', $titleout);
             } else {
                 $toc .= html_writer::link(new moodle_url('view.php', array('id' => $cm->id, 'chapterid' => $ch->id)), $titleout,
-                    array('title' => $titleunescaped, 'class' => 'text-truncate'));
+                    array('title' => $titleunescaped));
             }
 
-            $toc .= html_writer::start_tag('div', array('class' => 'action-list d-flex ml-auto'));
+            $toc .= html_writer::start_tag('div', array('class' => 'action-list'));
             if ($i != 1) {
                 $toc .= html_writer::link(new moodle_url('move.php', array('id' => $cm->id, 'chapterid' => $ch->id, 'up' => '1', 'sesskey' => $USER->sesskey)),
                         $OUTPUT->pix_icon('t/up', get_string('movechapterup', 'mod_book', $title)),
@@ -341,7 +341,6 @@ function book_get_toc($chapters, $chapter, $book, $cm, $edit) {
             $toc .= html_writer::link(new moodle_url('edit.php', array('cmid' => $cm->id, 'pagenum' => $ch->pagenum, 'subchapter' => $ch->subchapter)),
                                             $OUTPUT->pix_icon('add', $buttontitle, 'mod_book'), array('title' => $buttontitle));
             $toc .= html_writer::end_tag('div');
-            $toc .= html_writer::end_tag('div');
 
             if (!$ch->subchapter) {
                 $toc .= html_writer::start_tag('ul');
@@ -366,11 +365,11 @@ function book_get_toc($chapters, $chapter, $book, $cm, $edit) {
                     $ns = 0;
 
                     if ($first) {
-                        $toc .= html_writer::start_tag('li');
+                        $toc .= html_writer::start_tag('li', array('class' => 'clearfix'));
                     } else {
                         $toc .= html_writer::end_tag('ul');
                         $toc .= html_writer::end_tag('li');
-                        $toc .= html_writer::start_tag('li');
+                        $toc .= html_writer::start_tag('li', array('class' => 'clearfix'));
                     }
 
                     if ($book->numbering == BOOK_NUM_NUMBERS) {
@@ -380,11 +379,11 @@ function book_get_toc($chapters, $chapter, $book, $cm, $edit) {
                     $ns++;
 
                     if ($first) {
-                        $toc .= html_writer::start_tag('li');
+                        $toc .= html_writer::start_tag('li', array('class' => 'clearfix'));
                         $toc .= html_writer::start_tag('ul');
-                        $toc .= html_writer::start_tag('li');
+                        $toc .= html_writer::start_tag('li', array('class' => 'clearfix'));
                     } else {
-                        $toc .= html_writer::start_tag('li');
+                        $toc .= html_writer::start_tag('li', array('class' => 'clearfix'));
                     }
 
                     if ($book->numbering == BOOK_NUM_NUMBERS) {
@@ -538,6 +537,49 @@ function mod_book_get_tagged_chapters($tag, $exclusivemode = false, $fromctx = 0
         return new core_tag\output\tagindex($tag, 'mod_book', 'book_chapters', $content,
             $exclusivemode, $fromctx, $ctx, $rec, $page, $totalpages);
     }
+}
+
+/**
+ * Returns the last book visited page ID
+ *
+ * @param $book
+ * @param $cm
+ *
+ * @return bool
+ *
+ * @throws dml_exception
+ */
+function mod_book_get_last_user_viewed_chapter($book, $cm) {
+    global $DB, $USER;
+
+    $parameters = [
+        'component' => 'mod_book',
+        'action' => 'viewed',
+        'target' => 'chapter',
+        'objecttable' => 'book_chapters',
+        'contextinstanceid' => $cm->id,
+        'courseid' => $book->course,
+        'userid' => $USER->id
+    ];
+
+    $sql = "SELECT objectid
+            FROM {logstore_standard_log}
+            WHERE component = :component
+                AND action = :action
+                AND target = :target
+                AND objecttable = :objecttable
+                AND contextinstanceid = :contextinstanceid
+                AND courseid = :courseid
+                AND userid = :userid
+            ORDER BY timecreated desc";
+
+    $record = $DB->get_record_sql($sql, $parameters, IGNORE_MULTIPLE);
+
+    if ($record) {
+        return $record->objectid;
+    }
+
+    return false;
 }
 
 /**

@@ -30,25 +30,37 @@ defined('MOODLE_INTERNAL') || die;
 class backup_book_activity_structure_step extends backup_activity_structure_step {
 
     protected function define_structure() {
+        // To know if we are including userinfo
+        $userinfo = $this->get_setting_value('userinfo');
 
         // Define each element separated.
         $book = new backup_nested_element('book', array('id'), array(
             'name', 'intro', 'introformat', 'numbering', 'navstyle',
-            'customtitles', 'timecreated', 'timemodified'));
+            'customtitles', 'backtolastpage', 'completionview', 'timecreated', 'timemodified'));
         $chapters = new backup_nested_element('chapters');
         $chapter = new backup_nested_element('chapter', array('id'), array(
             'pagenum', 'subchapter', 'title', 'content', 'contentformat',
             'hidden', 'timemcreated', 'timemodified', 'importsrc'));
+        $userviews = new backup_nested_element('userviews');
+        $userview = new backup_nested_element('userview', array('id'), array(
+            'chapterid', 'userid', 'timemcreated', 'timemodified'
+        ));
 
         $tags = new backup_nested_element('chaptertags');
         $tag = new backup_nested_element('tag', array('id'), array('itemid', 'rawname'));
 
         $book->add_child($chapters);
         $chapters->add_child($chapter);
+        $userviews->add_child($userview);
 
         // Define sources
         $book->set_source_table('book', array('id' => backup::VAR_ACTIVITYID));
         $chapter->set_source_table('book_chapters', array('bookid' => backup::VAR_PARENTID));
+
+        // All the rest of elements only happen if we are including user info
+        if ($userinfo) {
+            $userview->set_source_table('book_chapters_userviews', array('chapterid' => backup::VAR_PARENTID));
+        }
 
         // Define file annotations
         $book->annotate_files('mod_book', 'intro', null); // This file area hasn't itemid
